@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17202B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Raf Fiyatları</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section class="login" id="login" hidden>
+    <form class="login__card" id="loginForm">
+      <h1 class="login__title">Raf Fiyatları</h1>
+      <p class="login__text">Dükkan şifresini gir.</p>
+      <label class="field">
+        <span class="sr-only">Şifre</span>
+        <input name="password" type="password" autocomplete="current-password" required>
+        <p class="field__error" id="loginError"></p>
+      </label>
+      <button class="btn btn--primary" type="submit">Giriş yap</button>
+    </form>
+  </section>
+
+  <header class="topbar">
+    <div class="topbar__row">
+      <h1 class="brandmark">Raf Fiyatları</h1>
+      <div class="topbar__actions">
+        <button class="icon-btn" id="toggleBuy" type="button" aria-pressed="false" title="Alış fiyatlarını gizle">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="sr-only">Alış fiyatlarını gizle</span>
+        </button>
+        <button class="icon-btn" id="openBranches" type="button" title="Şube adları">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>
+          <span class="sr-only">Şube adları</span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="tabs" id="branchTabs" aria-label="Şube"></nav>
+
+    <div class="searchrow">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="sr-only">Marka veya model ara</span>
+        <input id="search" type="search" placeholder="iPhone 13, Galaxy A54…" autocomplete="off" enterkeyhint="search">
+      </label>
+      <button class="filter-btn" id="openFilters" type="button">
+        Filtre <span class="filter-btn__count" id="filterCount" hidden></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="shelf">
+    <p class="summary" id="summary" aria-live="polite"></p>
+    <ul class="list" id="list"></ul>
+    <div class="empty" id="empty" hidden>
+      <p class="empty__title" id="emptyTitle">Rafta henüz telefon yok</p>
+      <p class="empty__text" id="emptyText">Sağ alttaki + ile ilk telefonu ekle.</p>
+    </div>
+  </main>
+
+  <button class="fab" id="openAdd" type="button" aria-label="Telefon ekle">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <!-- Telefon ekle / düzenle -->
+  <dialog class="sheet" id="phoneSheet" aria-labelledby="phoneSheetTitle">
+    <form id="phoneForm" class="sheet__body" novalidate>
+      <div class="sheet__head">
+        <h2 id="phoneSheetTitle">Telefon ekle</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Kapat">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <fieldset class="field">
+        <legend>Şube</legend>
+        <div class="segmented" id="branchChoice"></div>
+        <p class="field__error" data-error="branch_id"></p>
+      </fieldset>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Marka</span>
+          <input name="brand" list="brandList" autocomplete="off" autocapitalize="words" required>
+          <p class="field__error" data-error="brand"></p>
+        </label>
+        <label class="field">
+          <span>Model</span>
+          <input name="model" autocomplete="off" required>
+          <p class="field__error" data-error="model"></p>
+        </label>
+      </div>
+      <datalist id="brandList"></datalist>
+
+      <fieldset class="field">
+        <legend>Hafıza</legend>
+        <div class="chips" id="storageChoice"></div>
+        <p class="field__error" data-error="storage_gb"></p>
+      </fieldset>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Pil sağlığı (%)</span>
+          <input name="battery" type="number" inputmode="numeric" min="1" max="100" placeholder="Örn. 88">
+          <p class="field__error" data-error="battery"></p>
+        </label>
+        <div class="field">
+          <span>Garanti</span>
+          <label class="switch">
+            <input name="warranty" type="checkbox">
+            <span class="switch__track" aria-hidden="true"></span>
+            <span class="switch__label" data-on="Garantili" data-off="Garantisiz"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Alış fiyatı (₺)</span>
+          <input name="buy_price" inputmode="numeric" autocomplete="off" required>
+          <p class="field__error" data-error="buy_price"></p>
+        </label>
+        <label class="field">
+          <span>Satış fiyatı (₺)</span>
+          <input name="sell_price" inputmode="numeric" autocomplete="off" required>
+          <p class="field__error" data-error="sell_price"></p>
+        </label>
+      </div>
+      <p class="profit" id="profitPreview"></p>
+
+      <label class="field">
+        <span>Not</span>
+        <input name="note" autocomplete="off" placeholder="Kutulu, ekranda çizik var…">
+      </label>
+
+      <div class="sheet__foot">
+        <button class="btn btn--danger" type="button" id="deletePhone" hidden>Sil</button>
+        <button class="btn btn--primary" type="submit" id="savePhone">Kaydet</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Filtreler -->
+  <dialog class="sheet" id="filterSheet" aria-labelledby="filterSheetTitle">
+    <form id="filterForm" class="sheet__body">
+      <div class="sheet__head">
+        <h2 id="filterSheetTitle">Filtrele</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Kapat">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="grid2">
+        <label class="field"><span>Marka</span><select name="brand" id="filterBrand"></select></label>
+        <label class="field"><span>Hafıza</span><select name="storage_gb" id="filterStorage"></select></label>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Garanti</span>
+          <select name="warranty">
+            <option value="">Hepsi</option>
+            <option value="1">Garantili</option>
+            <option value="0">Garantisiz</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Pil en az</span>
+          <select name="min_battery">
+            <option value="">Hepsi</option>
+            <option value="80">%80 ve üstü</option>
+            <option value="85">%85 ve üstü</option>
+            <option value="90">%90 ve üstü</option>
+            <option value="95">%95 ve üstü</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label class="field"><span>En düşük satış (₺)</span><input name="min_price" inputmode="numeric" autocomplete="off"></label>
+        <label class="field"><span>En yüksek satış (₺)</span><input name="max_price" inputmode="numeric" autocomplete="off"></label>
+      </div>
+
+      <label class="field">
+        <span>Sıralama</span>
+        <select name="sort">
+          <option value="newest">En son eklenen</option>
+          <option value="price_asc">Fiyat: ucuzdan pahalıya</option>
+          <option value="price_desc">Fiyat: pahalıdan ucuza</option>
+          <option value="battery_desc">Pil: en iyi önce</option>
+          <option value="brand">Marka adına göre</option>
+        </select>
+      </label>
+
+      <div class="sheet__foot">
+        <button class="btn" type="reset">Temizle</button>
+        <button class="btn btn--primary" type="submit">Sonuçları göster</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Şube adları -->
+  <dialog class="sheet" id="branchSheet" aria-labelledby="branchSheetTitle">
+    <form id="branchForm" class="sheet__body">
+      <div class="sheet__head">
+        <h2 id="branchSheetTitle">Şube adları</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Kapat">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div id="branchInputs"></div>
+      <div class="sheet__foot">
+        <button class="btn" type="button" id="logout" hidden>Çıkış yap</button>
+        <button class="btn btn--primary" type="submit">Adları kaydet</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
