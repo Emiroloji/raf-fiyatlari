@@ -1,14 +1,39 @@
 import os from 'node:os';
+import express from 'express';
 import { config } from './config.js';
 import { createApp } from './create-app.js';
 
-const { app } = await createApp({
-  db: config.db,
-  branchNames: config.branches,
-  password: config.appPassword,
-  secureCookie: config.isProduction,
-  publicDir: config.publicDir,
-});
+/**
+ * Vercel'de dosyaya yazılamaz; Turso bağlı değilse uygulamayı çökertmek yerine
+ * ne eksik olduğunu söyleyen küçük bir uygulama döndürür.
+ */
+function setupErrorApp(message) {
+  const app = express();
+  app.use('/api', (_req, res) => res.status(503).json({ error: message }));
+  app.use(express.static(config.publicDir));
+  return app;
+}
+
+async function buildApp() {
+  if (process.env.VERCEL && !process.env.TURSO_DATABASE_URL) {
+    return setupErrorApp('Veritabanı bağlı değil. Vercel > Storage kısmından Turso ekleyip yeniden yayınla.');
+  }
+  try {
+    const { app } = await createApp({
+      db: config.db,
+      branchNames: config.branches,
+      password: config.appPassword,
+      secureCookie: config.isProduction,
+      publicDir: config.publicDir,
+    });
+    return app;
+  } catch (err) {
+    console.error('Uygulama başlatılamadı:', err);
+    return setupErrorApp('Veritabanına bağlanılamadı. Turso ayarlarını kontrol et.');
+  }
+}
+
+const app = await buildApp();
 
 // Vercel bu dosyadaki Express uygulamasını kendisi çalıştırır.
 export default app;

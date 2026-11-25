@@ -432,8 +432,10 @@ async function init() {
     $('#logout').hidden = !session.authEnabled;
     if (!session.loggedIn) return showLogin();
     await loadAll();
-  } catch {
-    toast('Sunucuya bağlanılamadı.');
+  } catch (err) {
+    $('#empty').hidden = false;
+    $('#emptyTitle').textContent = 'Uygulama açılamadı';
+    $('#emptyText').textContent = err.message || 'Sunucuya bağlanılamadı.';
   }
 }
 
