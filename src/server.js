@@ -15,7 +15,11 @@ function setupErrorApp(message) {
 }
 
 async function buildApp() {
-  if (process.env.VERCEL && !process.env.TURSO_DATABASE_URL) {
+  if (process.env.VERCEL && !config.hasRemoteDb) {
+    const pgKey = Object.keys(process.env).find((k) => /^postgres(ql)?:\/\//.test(process.env[k] || ''));
+    if (pgKey) {
+      return setupErrorApp('Bağlanan veritabanı Postgres. Bu uygulama Turso ile çalışır; Storage kısmından Turso ekle.');
+    }
     return setupErrorApp('Veritabanı bağlı değil. Vercel > Storage kısmından Turso ekleyip yeniden yayınla.');
   }
   try {
